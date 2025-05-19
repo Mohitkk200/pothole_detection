@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MOHIT JAIN'S | Pothole Detection</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #1f1c2c, #928DAB);
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #fff;
+    }
+
+    .container {
+      background: rgba(222, 46, 46, 0.53);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      padding: 40px;
+      max-width: 520px;
+      width: 90%;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      text-align: center;
+      position: relative;
+    }
+
+    h1 {
+      font-family: 'Orbitron', sans-serif;
+      margin-bottom: 10px;
+      font-size: 1.8rem;
+      letter-spacing: 1px;
+    }
+
+    h2 {
+      font-weight: 400;
+      font-size: 1rem;
+      color: #a0cadc;
+      margin-bottom: 25px;
+    }
+
+    input[type="file"] {
+      margin: 20px 0;
+      padding: 10px;
+      background-color: #fff;
+      border-radius: 8px;
+      border: none;
+      width: 100%;
+      font-size: 14px;
+    }
+
+    button {
+      background: linear-gradient(90deg, #00c6ff, #0072ff);
+      color: white;
+      padding: 12px 30px;
+      border: none;
+      border-radius: 30px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s ease;
+      font-size: 15px;
+    }
+
+    button:hover {
+      background: linear-gradient(90deg, #0072ff, #00c6ff);
+    }
+
+    #spinner {
+      display: none;
+      margin-top: 20px;
+    }
+
+    .live-detect {
+      margin-top: 20px;
+      color: #ddd;
+      font-size: 0.95rem;
+    }
+
+    @media (max-width: 600px) {
+      h1 {
+        font-size: 1.4rem;
+      }
+
+      h2 {
+        font-size: 0.9rem;
+      }
+    }
+  </style>
+  <script>
+    function showSpinner() {
+      document.getElementById('spinner').style.display = 'block';
+    }
+  </script>
+</head>
+<body>
+  <div class="container">
+    <h1>MOHIT JAIN'S | Pothole Detection</h1>
+    <h2>Upload image or video for YOLO-based analysis</h2>
+    <form action="/predict" method="post" enctype="multipart/form-data" onsubmit="showSpinner()">
+      <input type="file" name="media" accept="image/*,video/*" required />
+      <button type="submit">Upload & Detect</button>
+      <div id="spinner">
+        <img src="https://i.gifer.com/YCZH.gif" width="60" alt="Loading..."/>
+        <p>Processing, please wait...</p>
+      </div>
+    </form>
+    <div class="live-detect">
+      Want to detect via camera? <a href="/video_feed" style="color: #fff; text-decoration: underline;">Click here</a>
+    </div>
+  </div>
+</body>
+</html>
