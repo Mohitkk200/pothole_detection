@@ -83,7 +83,7 @@ def get_frame(video_path):
         if not success:
             break
 
-        frame = cv2.resize(frame, (640, 360))  # Reduce frame size
+        frame = cv2.resize(frame, (640, 360))  # Resize to reduce memory
         results = model(frame[..., ::-1], device='cpu')
         annotated = results[0].plot()
 
@@ -103,6 +103,4 @@ def video_feed(filename):
     video_path = os.path.join(UPLOAD_FOLDER, filename)
     return Response(get_frame(video_path), mimetype='multipart/x-mixed-replace; boundary=frame')
 
-if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host='0.0.0.0', port=port)
+# ✅ DO NOT include app.run() — Render uses gunicorn to run the app!
