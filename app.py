@@ -1,7 +1,6 @@
 from flask import Flask, render_template, request, Response, send_from_directory
 import os
 from werkzeug.utils import secure_filename
-from ultralytics import YOLO
 import cv2
 import time
 
@@ -16,8 +15,7 @@ app.config['RESULT_FOLDER'] = RESULT_FOLDER
 ALLOWED_IMAGE_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 ALLOWED_VIDEO_EXTENSIONS = {'mp4', 'avi', 'mov'}
 
-MODEL_PATH = 'models/yolo11n.pt'  # Adjust your model path here
-model = YOLO(MODEL_PATH)
+MODEL_PATH = 'models/yolo11n.pt'
 
 def allowed_file(filename, allowed_set):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in allowed_set
@@ -50,7 +48,10 @@ def predict():
         return "Unsupported file type", 400
 
 def handle_image(path, filename):
-    results = model(path)
+    from ultralytics import YOLO
+    model = YOLO(MODEL_PATH)
+    results = model(path, device='cpu')
+
     annotated_img = results[0].plot()
     pothole_count = len(results[0].boxes) if results[0].boxes is not None else 0
 
@@ -62,16 +63,17 @@ def handle_image(path, filename):
     return render_template('result.html', media_type='image', media_path=display_path, pothole_count=pothole_count)
 
 def handle_video(path, filename):
-    # Instead of saving result video, we stream it in real-time
     return render_template('result.html', media_type='video_stream', video_name=filename)
 
 def get_frame(video_path):
+    from ultralytics import YOLO
+    model = YOLO(MODEL_PATH)
     video = cv2.VideoCapture(video_path)
     while True:
         success, frame = video.read()
         if not success:
             break
-        results = model(frame[..., ::-1])
+        results = model(frame[..., ::-1], device='cpu')
         annotated = results[0].plot()
         ret, jpeg = cv2.imencode('.jpg', annotated)
         if not ret:
@@ -85,10 +87,6 @@ def video_feed(filename):
     video_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
     return Response(get_frame(video_path), mimetype='multipart/x-mixed-replace; boundary=frame')
 
-# if __name__ == '__main__':
-#     app.run(debug=True)
-
 if __name__ == '__main__':
-    import os
     port = int(os.environ.get("PORT", 5000))
-    app.run(debug=True, host='0.0.0.0', port=port)
+    app.run(host='0.0.0.0', port=port)
