@@ -1,5 +1,8 @@
-from flask import Flask, render_template, request, Response
 import os
+# Set YOLO config path to a writable directory
+os.environ["YOLO_CONFIG_DIR"] = "/tmp"
+
+from flask import Flask, render_template, request, Response
 import cv2
 import time
 from werkzeug.utils import secure_filename
@@ -7,10 +10,12 @@ from ultralytics import YOLO
 
 app = Flask(__name__)
 
+# Folders
 UPLOAD_FOLDER = 'static/uploads'
 RESULT_FOLDER = 'static/results'
 MODEL_PATH = 'models/yolo11n.pt'
 
+# File extension sets
 ALLOWED_IMAGE_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 ALLOWED_VIDEO_EXTENSIONS = {'mp4', 'avi', 'mov'}
 
@@ -21,14 +26,15 @@ app.config['RESULT_FOLDER'] = RESULT_FOLDER
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(RESULT_FOLDER, exist_ok=True)
 
+# Load model lazily to avoid memory bloat on import
 model = None
-
 def get_model():
     global model
     if model is None:
         model = YOLO(MODEL_PATH)
     return model
 
+# Utility
 def allowed_file(filename, allowed_set):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in allowed_set
 
@@ -83,7 +89,7 @@ def get_frame(video_path):
         if not success:
             break
 
-        frame = cv2.resize(frame, (640, 360))  # Resize to reduce memory
+        frame = cv2.resize(frame, (640, 360))  # Reduce size for speed
         results = model(frame[..., ::-1], device='cpu')
         annotated = results[0].plot()
 
@@ -103,4 +109,6 @@ def video_feed(filename):
     video_path = os.path.join(UPLOAD_FOLDER, filename)
     return Response(get_frame(video_path), mimetype='multipart/x-mixed-replace; boundary=frame')
 
-# ✅ DO NOT include app.run() — Render uses gunicorn to run the app!
+if __name__ == '__main__':
+    port = int(os.environ.get("PORT", 5000))  # Ensure Render detects correct port
+    app.run(host='0.0.0.0', port=port)
